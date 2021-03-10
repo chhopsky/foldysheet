@@ -25,7 +25,9 @@ for match in matches:
         logging.debug(f'getting {team["opponent"]["acronym"]}')
         if not teams.get(team["opponent"]["acronym"]):
             a_team = team["opponent"]["acronym"]
-            teams[a_team] = {"slug": team["opponent"]["slug"]}
+            teams[a_team] = {"slug": team["opponent"]["slug"],
+            "acronym": a_team,
+            "wins": 0}
             logging.debug(f"adding {a_team}")
     a_team = team["opponent"]["acronym"]
     try:
@@ -34,13 +36,16 @@ for match in matches:
         winner = None
     
     if winner is not None:
-        if teams[winner].get("wins"):
-            teams[winner]["wins"] += 1
-        else:
-            teams[winner]["wins"] = 1
+        teams[winner]["wins"] += 1
 
 print(f"found {len(matches)} matches and {len(teams)} teams")
-pprint(f"{teams}")
+
+i = 12
+while i >= 0:
+    for tricode, team in teams.items():
+        if team["wins"] == i:
+            print(team)
+    i = i - 1
 
 
 # TEAMS = {"TL", "C9", "TSM", "DIG", "100T", "EG", "IMT", "FLY", "CLG", "GG"}
