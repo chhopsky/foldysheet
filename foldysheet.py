@@ -5,8 +5,7 @@ import logging
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
-series = "lcs"
-series_url = f"https://api.pandascore.co/series/running?search[slug]={series}"
+series_url = f"https://api.pandascore.co/series/running?search[slug]={config.SERIES}"
 token = config.TOKEN
 headers = {"Authorization": f"Bearer {token}"}
 

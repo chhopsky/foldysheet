@@ -1,1 +1,2 @@
+SERIES = "lcs"
 TOKEN = "yourtokengoeshere"
