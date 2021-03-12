@@ -3,9 +3,77 @@ import argparse
 import sys
 import logging
 
+def eliminated(scenarios):
+    scenario_counter = {}
+
+    for team, details in teams.items():
+        teamlist.append(team)
+        scenario_counter[team] = 0
+
+    print(f"Total possibilities: {len(scenarios)}")
+    for possibility in scenarios:
+        for team in teamlist:
+            if possibility["standings"][team] > 6:
+                scenario_counter[team] += 1
+            
+    print("The following teams are eliminated in all scenarios:")
+    for team, scenario_count in scenario_counter.items():
+        if scenario_count == len(scenarios):
+            print(f"{team} ")
+
+def locked(scenarios):
+    scenario_counter = {}
+
+    for team, details in teams.items():
+        teamlist.append(team)
+        scenario_counter[team] = 0
+
+    for possibility in scenarios:
+        cutoff = 7
+        if possibility["standings"]["ties"] == "yes":
+            for tie in possibility["standings"]["tied_for"]:
+                # print(f'checking {tie} in {possibility["standings"]["tied_for"]}')
+                if tie + possibility["standings"]["tie"][str(tie)] > 6:
+                    cutoff = tie - 1
+                    # print(f'tie at {tie}, tie + length of tie = {tie + possibility["standings"]["tie"][str(tie)]}')
+                    # print(f'cutoff is {cutoff}')
+                    # print(f'tiebreaker failure found: {possibility}')
+                    # input("test")
+
+        for team in teamlist:     
+            if possibility["standings"][team] < cutoff:
+                #or (possibility["standings"][team] == 6 and 6 not in possibility["standings"]["tied_for"]):
+                scenario_counter[team] += 1
+        
+    print(scenario_counter)
+    print("The following teams are locked in all scenarios:")
+    for team, scenario_count in scenario_counter.items():
+        if scenario_count == len(scenarios):
+            print(f"{team} ")
+
+def maybe(scenarios):
+    scenario_counter = {}
+
+    for team, details in teams.items():
+        teamlist.append(team)
+        scenario_counter[team] = 0
+
+    scenario_count = 0
+    print(f"Total possibilities: {len(scenarios)}")
+    for possibility in scenarios:
+        scenario_count += 1
+        for team in teamlist:
+            if possibility["standings"][team] <= 6:
+                scenario_counter[team] += 1
+            
+    print("The following can possibly make playoffs in X scenarios:")
+    for team, scenario_count in scenario_counter.items():
+        if scenario_count != 0 and scenario_count != len(scenarios):
+            print(f"{team}: {scenario_count}")
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, choices=['made_playoffs', 'eliminated', 'scenarios_made', 'scenarios_tied', 'ties'], help='The command you want to run.')
+    parser.add_argument('command', type=str, choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen'], help='The command you want to run.')
 
     args = parser.parse_args()
     if len(sys.argv) == 1:
@@ -17,40 +85,14 @@ if __name__ == '__main__':
         teams = possibilities.pop(0)
         teamlist = []
 
-        scenario_counter = {}
+        if args.command == 'locked':
+            locked(possibilities)
 
-        for team, details in teams.items():
-            teamlist.append(team)
-            scenario_counter[team] = 0
+        if args.command == 'eliminated':
+            eliminated(possibilities)
+        
+        if args.command == 'maybe':
+            maybe(possibilities)
 
-        if args.command == 'made_playoffs':
-            can_make_playoffs = teamlist.copy()
-            scenario_count = 0
-            print(f"Total possibilities: {len(possibilities)}")
-            for possibility in possibilities:
-                scenario_count += 1
-                for item in possibility:
-                    if item.get("ties"):
-                        # print(item)
-                        for team in teamlist:
-                            # print(f"checking {team}")
-                            if item[team] >= 6 and 6 not in item["tied_for"]:
-                                scenario_counter[team] += 1
-                                # print(f"{team} does not in this scenario")
-                                try:
-                                    can_make_playoffs.remove(team)
-                                except ValueError:
-                                    pass
-                        # input("Press Enter to continue...")
-
-            for each in can_make_playoffs:
-                scenario_counter.pop(each)
-            print(f"Checked {scenario_count} scenarios.")
-            print(f"The following teams are locked for playoffs: {can_make_playoffs}")
-            print(f"The following teams have X scenarios where they may not make it:")
-            print(scenario_counter)
+        #if args.command =='whatneedstohappen':
 # def check_possibilities(team, condition):
-
-    
-
-

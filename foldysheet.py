@@ -67,11 +67,10 @@ possibilities.append(teams)
 i = 0
 while i < total_possibilities:
     wins = bin_str(i).rjust(unplayed_match_count, '0')
-    possibility = []
-    possibility_teams = {"standings": {}}
+    possibility = {"standings" : {}, "matches": []}
 
     for key, value in teams.items():
-        possibility_teams["standings"][key] = value["wins"]
+        possibility["standings"][key] = value["wins"]
 
     for num, match in enumerate(unplayed_matches):
         # match["winner"] = match["opponents"][int(wins[num])]
@@ -79,41 +78,42 @@ while i < total_possibilities:
         for team in match["opponents"]:
             possible_match["opponents"].append(team["opponent"]["acronym"])
         possible_match["winner"] = match["opponents"][int(wins[num])]["opponent"]["acronym"]
-        possibility_teams["standings"][possible_match["winner"]] += 1
-        possibility.append(possible_match)
+        possibility["standings"][possible_match["winner"]] += 1
+        possibility["matches"].append(possible_match)
         #possibility.append(possibility_teams)
 
         #get the actual valid counts of wins
-        standings = {"standings": {}}
-        order = []
+    standings = {"standings": {}}
+    order = []
 
-        # empty list for each win number
-        for key, value in possibility_teams["standings"].items():
-            standings["standings"][value] = []
-       
-       # add each team to their number of wins
-        for key, value in possibility_teams["standings"].items():
-            standings["standings"][value].append(key)
+    # empty list for each win number
+    for key, value in possibility["standings"].items():
+        standings["standings"][value] = []
+    
+    # add each team to their number of wins
+    for key, value in possibility["standings"].items():
+        standings["standings"][value].append(key)
 
-        # create a list of the win numbers
-        for key, value in standings["standings"].items():
-            order.append(key)
+    # create a list of the win numbers
+    for key, value in standings["standings"].items():
+        order.append(key)
+    
+    order.sort(reverse = True)
+
+    actual_standings = {"ties": "no", "tied_for": [], "tie": {}}
+    rank = 1
+
+    for win_count in order:
+        for rank_team in standings["standings"][win_count]:
+            actual_standings[rank_team] = rank
         
-        order.sort(reverse = True)
+        if len(standings["standings"][win_count]) > 1:
+            actual_standings["ties"] = "yes"
+            actual_standings["tied_for"].append(rank)
+            actual_standings["tie"][rank] = len(standings["standings"][win_count])
+        rank += len(standings["standings"][win_count])
 
-        actual_standings = {"ties": "no", "tied_for": []}
-        rank = 1
-
-        for win_count in order:
-            for rank_team in standings["standings"][win_count]:
-                actual_standings[rank_team] = rank
-            
-            if len(standings["standings"][win_count]) > 1:
-                actual_standings["ties"] = "yes"
-                actual_standings["tied_for"].append(rank)
-            rank += len(standings["standings"][win_count])
-
-        possibility.append(actual_standings)
+    possibility["standings"] = actual_standings
     possibilities.append(possibility)
     i = i + 1
 
