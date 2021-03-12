@@ -2,6 +2,7 @@ import json
 import argparse
 import sys
 import logging
+import config
 
 def eliminated(scenarios):
     scenario_counter = {}
@@ -12,7 +13,7 @@ def eliminated(scenarios):
 
     for possibility in scenarios:
         for team in teamlist:
-            if possibility["standings"][team] > 6:
+            if possibility["standings"][team] > config.PLAYOFFS_CUTOFF_POSITION:
                 scenario_counter[team] += 1
             
     print("The following teams are eliminated in all scenarios:")
@@ -28,10 +29,10 @@ def locked(scenarios):
         scenario_counter[team] = 0
 
     for possibility in scenarios:
-        cutoff = 7
+        cutoff = config.PLAYOFFS_CUTOFF_POSITION + 1
         if possibility["standings"]["ties"] == "yes":
             for tie in possibility["standings"]["tied_for"]:
-                if tie + possibility["standings"]["tie"][str(tie)] - 1 > 6:
+                if tie + possibility["standings"]["tie"][str(tie)] - 1 > config.PLAYOFFS_CUTOFF_POSITION:
                     cutoff = tie
 
         for team in teamlist:     
@@ -55,7 +56,7 @@ def maybe(scenarios):
     for possibility in scenarios:
         scenario_count += 1
         for team in teamlist:
-            if possibility["standings"][team] <= 6:
+            if possibility["standings"][team] <= config.PLAYOFFS_CUTOFF_POSITION:
                 scenario_counter[team] += 1
             
     print("The following can possibly make playoffs in X scenarios:")
