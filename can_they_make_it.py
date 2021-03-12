@@ -32,13 +32,9 @@ def locked(scenarios):
         cutoff = 7
         if possibility["standings"]["ties"] == "yes":
             for tie in possibility["standings"]["tied_for"]:
-                # print(f'checking {tie} in {possibility["standings"]["tied_for"]}')
                 if tie + possibility["standings"]["tie"][str(tie)] - 1 > 6:
                     cutoff = tie
-                    # print(f'tie at {tie}, tie + length of tie = {tie + possibility["standings"]["tie"][str(tie)]}')
-                    # print(f'cutoff is {cutoff}')
-                    # print(f'tiebreaker failure found: {possibility}')
-                    # input("test")
+
             if tie == 2 and tie + possibility["standings"]["tie"][str(tie)] > 6:
                 print(f'cutoff is {cutoff}, {possibility["standings"]}')
 
