@@ -120,7 +120,7 @@ while i < total_possibilities:
 f = open("output.json", "w")
 f.write(json.dumps(possibilities))
 f.close()
-
+print("All possible outcomes written to output.json. Run can_they_make_it.py to analyze.")
 # TEAMS = {"TL", "C9", "TSM", "DIG", "100T", "EG", "IMT", "FLY", "CLG", "GG"}
 # ROUNDS = 3
 

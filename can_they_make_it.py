@@ -10,7 +10,6 @@ def eliminated(scenarios):
         teamlist.append(team)
         scenario_counter[team] = 0
 
-    print(f"Total possibilities: {len(scenarios)}")
     for possibility in scenarios:
         for team in teamlist:
             if possibility["standings"][team] > 6:
@@ -35,14 +34,11 @@ def locked(scenarios):
                 if tie + possibility["standings"]["tie"][str(tie)] - 1 > 6:
                     cutoff = tie
 
-            if tie == 2 and tie + possibility["standings"]["tie"][str(tie)] > 6:
-                print(f'cutoff is {cutoff}, {possibility["standings"]}')
-
         for team in teamlist:     
             if possibility["standings"][team] < cutoff:
                 scenario_counter[team] += 1
         
-    print(scenario_counter)
+
     print("The following teams are locked in all scenarios:")
     for team, scenario_count in scenario_counter.items():
         if scenario_count == len(scenarios):
@@ -56,7 +52,6 @@ def maybe(scenarios):
         scenario_counter[team] = 0
 
     scenario_count = 0
-    print(f"Total possibilities: {len(scenarios)}")
     for possibility in scenarios:
         scenario_count += 1
         for team in teamlist:
