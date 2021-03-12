@@ -33,16 +33,17 @@ def locked(scenarios):
         if possibility["standings"]["ties"] == "yes":
             for tie in possibility["standings"]["tied_for"]:
                 # print(f'checking {tie} in {possibility["standings"]["tied_for"]}')
-                if tie + possibility["standings"]["tie"][str(tie)] > 6:
-                    cutoff = tie - 1
+                if tie + possibility["standings"]["tie"][str(tie)] - 1 > 6:
+                    cutoff = tie
                     # print(f'tie at {tie}, tie + length of tie = {tie + possibility["standings"]["tie"][str(tie)]}')
                     # print(f'cutoff is {cutoff}')
                     # print(f'tiebreaker failure found: {possibility}')
                     # input("test")
+            if tie == 2 and tie + possibility["standings"]["tie"][str(tie)] > 6:
+                print(f'cutoff is {cutoff}, {possibility["standings"]}')
 
         for team in teamlist:     
             if possibility["standings"][team] < cutoff:
-                #or (possibility["standings"][team] == 6 and 6 not in possibility["standings"]["tied_for"]):
                 scenario_counter[team] += 1
         
     print(scenario_counter)
@@ -84,6 +85,7 @@ if __name__ == '__main__':
         possibilities = json.load(json_file)
         teams = possibilities.pop(0)
         teamlist = []
+        print(f'Total scenarios: {len(possibilities)}')
 
         if args.command == 'locked':
             locked(possibilities)
