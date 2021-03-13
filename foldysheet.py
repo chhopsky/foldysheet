@@ -117,25 +117,8 @@ while i < total_possibilities:
     possibilities.append(possibility)
     i = i + 1
 
-f = open("output.json", "w")
+f = open(f"{config.SERIES}.json", "w")
 f.write(json.dumps(possibilities))
 f.close()
-print("All possible outcomes written to output.json. Run can_they_make_it.py to analyze.")
-# TEAMS = {"TL", "C9", "TSM", "DIG", "100T", "EG", "IMT", "FLY", "CLG", "GG"}
-# ROUNDS = 3
 
-# match_list = []
-# played_this_round = []
-
-# for team in TEAMS:
-#     for team2 in TEAMS:
-#         match = {}
-#         teams_in_this_match = [team, team2]
-#         teams_in_this_match.sort()
-#         if teams_in_this_match not in played_this_round and team is not team2:
-#             match["teams"] = teams_in_this_match
-#             played_this_round.append(teams_in_this_match)
-#             match_list.append(match)
-
-# print(f"total {len(match_list)}")
-# print(match_list)
+print(f"All possible outcomes written to {config.SERIES}.json. Run can_they_make_it.py to analyze.")
