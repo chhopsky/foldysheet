@@ -78,6 +78,7 @@ if __name__ == '__main__':
     with open(f'{config.SERIES}.json') as json_file:
         possibilities = json.load(json_file)
         teams = possibilities.pop(0)
+        previous_matches = possibilities.pop(0)
 
         if args.command == 'locked':
             locked_scenarios = locked(possibilities)
