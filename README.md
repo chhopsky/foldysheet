@@ -2,6 +2,8 @@ You know the foldy sheet. You love the foldy sheet.
 
 The foldy sheet is a physical implementation of a binary tree representing the full set of every possibility of the outcome of a regular LCS season, and is used to determine who's made playoffs, who hasn't, and how many scenarios in which team X makes it.
 
+This program works for all riot leagues supported by Panda, which is most of them.
+
 Requirements: Python 3.8, pipenv
 
 HOW TO USE:
@@ -13,6 +15,6 @@ HOW TO USE:
 
 Locked and eliminated are self explanatory. Maybe will tell you the number of scenarios in which a team *can* make it. Since every region has its own tiebreaker rules, this does *not* tell you how ties are solved. A scenario in which a team is tied will count both as a possibility and tell you who's tied. You can then apply your region's head to head rules to fix it.
 
-Playoff lock is manually set to 6th place, because I wrote this primarily for LCS. I'll add a configuration item for this soon to make it easier to use for other leagues. Technically it can work on any esport that deals with BO1s and is on pandascore, but probably supports BO3s so long as the series output is the same. I haven't tested it, but modifications for anything else should be minimal.
+Playoff lock is manually set to 6th place, because I wrote this primarily for LCS. Technically it can work on any esport that deals with BO1s and is on pandascore, it also works for BO3s, but playoff elimination rules may be different based on win-scores (2-0 vs 2-1) so YMMV.
 
 Any questions, hit me up @chhopsky on twitter.
