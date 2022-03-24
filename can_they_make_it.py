@@ -3,6 +3,7 @@ import argparse
 import sys
 import logging
 import config
+import dateutil.parser
 
 def eliminated(scenarios):
     scenario_counter = {}
@@ -19,6 +20,87 @@ def eliminated(scenarios):
 
     return scenario_counter
 
+
+def tiebreaker(possibility):
+    for tie_position in possibility["tied_for"]:
+        tie_count = possibility["tie"][str(tie_position)]
+        cutoff = config.PLAYOFFS_CUTOFF_POSITION
+        if tie_position <= cutoff > tie_position + tie_count - 1:
+            possibility["standings"]["tie_broken"] = {tie_position: False}
+            tied_teams = {}
+            tie_data = { "complete": True, "sov": []}
+            for key, value in possibility["standings"].items():
+                if value == tie_position:
+                    tied_teams[key] = { "wins": 0, "sov": [] }
+
+            for match in previous_matches:
+                winner = match["winner"]["acronym"]
+                if winner in tied_teams.keys():
+                    tied_teams[winner]["wins"] += 1
+                    match_start = dateutil.parser.isoparse(match["begin_at"])
+                    match_end = dateutil.parser.isoparse(match["end_at"])
+                    match_time = match_end - match_start
+                    for team in match["opponents"]:
+                        opponent = team["opponent"]["acronym"]
+                        if opponent != winner:
+                            tie_data["sov"].append((winner, match_time.seconds))
+            
+            for unfinished_match in possibility["matches"]:
+                winner = unfinished_match["winner"]
+                if winner in tied_teams.keys():
+                    tied_teams[winner]["wins"] += 1
+                    tied_teams["complete"] = False
+
+            if tie_count == 2:
+                # check played matches
+
+                for team, score in tied_teams.items():
+                    if score["wins"] == 0:
+                        possibility["standings"][team] += 1
+                        possibility["standings"]["tie_broken"][tie_position] = True
+                    if score["wins"] == 1 and tie_data["complete"] == True:
+                        tie_data["sov"].sort(key=lambda a: a[1])
+                        if tie_data["sov"][0] == team:
+                            possibility["standings"][team] += 1
+                            possibility["standings"]["tie_broken"][tie_position] = True
+                            
+            elif tie_count == 3:
+                # do three-way res. if only one part of the tie resolves, create a new tie
+                # scenarios:
+                # all teams 2-2 (dont resolve)
+                # 3-1, 2-2, 1-3 (dont resolve)
+                # 3-1, 3-1, 0-4 (eliminate 3, new tb 1&2)
+                # 4-0, 1-3, 1-3 (promote 1, new tb 2&3)
+                # 4-0, 2-2, 0-4 (order by score)
+                scores = []
+                for team, score in tied_teams.items():
+                    scores.append(score["wins"])
+                scores.sort(reverse=True)
+                if scores == [4, 2, 0]:
+                    possibility["standings"]["tie_broken"][tie_position] = True
+                    for team, score in tied_teams.items():
+                        if score["wins"] == 2:
+                            possibility["standings"][team] += 1
+                        elif score["wins"] == 0:
+                            possibility["standings"][team] += 2
+                elif scores == [4, 1, 1]:
+                    possibility["standings"]["tie_broken"][tie_position] = True
+                    for team, score in tied_teams.items():
+                        if score["wins"] == 1:
+                            possibility["standings"][team] += 1
+                            possibility["tied_for"].append(tie_position + 1)
+                            possibility["tie"][str(tie_position + 1)] = 2
+                elif scores == [3, 3, 1]:
+                    for team, score in tied_teams.items():
+                        if score["wins"] == 1:
+                            possibility["standings"][team] += 2
+                        elif score["wins"] == 3:
+                            possibility["tied_for"].append(tie_position)
+                            possibility["tie"][str(tie_position)] = 2
+            elif tie_count >= 4:
+                # we are fucked. it's playoffs baybee
+                pass
+
 def locked(scenarios):
     scenario_counter = {}
     teamlist = []
@@ -30,6 +112,9 @@ def locked(scenarios):
     for possibility in scenarios:
         cutoff = config.PLAYOFFS_CUTOFF_POSITION + 1
         if possibility["standings"]["ties"] == "yes":
+
+            tiebreaker(possibility)
+
             for tie in possibility["standings"]["tied_for"]:
                 if tie + possibility["standings"]["tie"][str(tie)] - 1 > config.PLAYOFFS_CUTOFF_POSITION:
                     cutoff = tie

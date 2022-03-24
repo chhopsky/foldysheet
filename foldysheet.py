@@ -62,6 +62,7 @@ print(f"Binary representation: {bin_str(total_possibilities)}")
 
 possibilities = []
 possibilities.append(teams)
+possibilities.append(matches)
 
 # calculate every possible combination of outcomes of every match
 i = 0
