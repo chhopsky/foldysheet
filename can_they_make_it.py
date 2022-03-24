@@ -22,8 +22,8 @@ def eliminated(scenarios):
 
 
 def tiebreaker(possibility):
-    for tie_position in possibility["tied_for"]:
-        tie_count = possibility["tie"][str(tie_position)]
+    for tie_position in possibility["standings"]["tied_for"]:
+        tie_count = possibility["standings"]["tie"][str(tie_position)]
         cutoff = config.PLAYOFFS_CUTOFF_POSITION
         if tie_position <= cutoff > tie_position + tie_count - 1:
             possibility["standings"]["tie_broken"] = {tie_position: False}
@@ -34,22 +34,23 @@ def tiebreaker(possibility):
                     tied_teams[key] = { "wins": 0, "sov": [] }
 
             for match in previous_matches:
-                winner = match["winner"]["acronym"]
-                if winner in tied_teams.keys():
-                    tied_teams[winner]["wins"] += 1
-                    match_start = dateutil.parser.isoparse(match["begin_at"])
-                    match_end = dateutil.parser.isoparse(match["end_at"])
-                    match_time = match_end - match_start
-                    for team in match["opponents"]:
-                        opponent = team["opponent"]["acronym"]
-                        if opponent != winner:
-                            tie_data["sov"].append((winner, match_time.seconds))
+                if match["status"] == "finished":
+                    winner = match["winner"]["acronym"]
+                    if winner in tied_teams.keys():
+                        tied_teams[winner]["wins"] += 1
+                        match_start = dateutil.parser.isoparse(match["begin_at"])
+                        match_end = dateutil.parser.isoparse(match["end_at"])
+                        match_time = match_end - match_start
+                        for team in match["opponents"]:
+                            opponent = team["opponent"]["acronym"]
+                            if opponent != winner:
+                                tie_data["sov"].append((winner, match_time.seconds))
             
             for unfinished_match in possibility["matches"]:
                 winner = unfinished_match["winner"]
                 if winner in tied_teams.keys():
                     tied_teams[winner]["wins"] += 1
-                    tied_teams["complete"] = False
+                    tie_data["complete"] = False
 
             if tie_count == 2:
                 # check played matches
@@ -88,15 +89,15 @@ def tiebreaker(possibility):
                     for team, score in tied_teams.items():
                         if score["wins"] == 1:
                             possibility["standings"][team] += 1
-                            possibility["tied_for"].append(tie_position + 1)
-                            possibility["tie"][str(tie_position + 1)] = 2
+                            possibility["standings"]["tied_for"].append(tie_position + 1)
+                            possibility["standings"]["tie"][str(tie_position + 1)] = 2
                 elif scores == [3, 3, 1]:
                     for team, score in tied_teams.items():
                         if score["wins"] == 1:
                             possibility["standings"][team] += 2
                         elif score["wins"] == 3:
-                            possibility["tied_for"].append(tie_position)
-                            possibility["tie"][str(tie_position)] = 2
+                            possibility["standings"]["tied_for"].append(tie_position)
+                            possibility["standings"]["tie"][str(tie_position)] = 2
             elif tie_count >= 4:
                 # we are fucked. it's playoffs baybee
                 pass
