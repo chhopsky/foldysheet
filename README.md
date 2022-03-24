@@ -23,6 +23,6 @@ Any questions, hit me up @chhopsky on twitter.
 
 ### LICENSING INFORMATION
 
-This program comes with absolutely no warranties or guarantees of any kind. It is for personal, non-commercial use only. If you use this program for commercial purposes, including but not limited to broadcast, written articles, social media, or videos, you require a license. Unlicensed commercial use will be aggressively pursued.
+This program comes with absolutely no warranties or guarantees of any kind. It is for personal, non-commercial use only. If you use this program for commercial purposes, including but not limited to broadcast, written articles, social media, or videos, you require a license. Unlicensed commercial use will result in legal remedies being aggressively pursued.
 
 Pricing varies depending on company and use. Contact me on twitter or via email to obtain a commercial license.
