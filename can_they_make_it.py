@@ -5,22 +5,6 @@ import logging
 import config
 import dateutil.parser
 
-def eliminated(scenarios):
-    scenario_counter = {}
-    teamlist = []
-    
-    for team, details in teams.items():
-        teamlist.append(team)
-        scenario_counter[team] = 0
-
-    for possibility in scenarios:
-        for team in teamlist:
-            if possibility["standings"][team] > config.PLAYOFFS_CUTOFF_POSITION:
-                scenario_counter[team] += 1
-
-    return scenario_counter
-
-
 def tiebreaker(possibility):
     for tie_position in possibility["standings"]["tied_for"]:
         tie_count = possibility["standings"]["tie"][str(tie_position)]
@@ -101,6 +85,24 @@ def tiebreaker(possibility):
             elif tie_count >= 4:
                 # we are fucked. it's playoffs baybee
                 pass
+
+
+def eliminated(scenarios):
+    scenario_counter = {}
+    teamlist = []
+    
+    for team, details in teams.items():
+        teamlist.append(team)
+        scenario_counter[team] = 0
+
+    for possibility in scenarios:
+        if possibility["standings"]["ties"] == "yes":
+            tiebreaker(possibility)
+        for team in teamlist:
+            if possibility["standings"][team] > config.PLAYOFFS_CUTOFF_POSITION:
+                scenario_counter[team] += 1
+
+    return scenario_counter
 
 def locked(scenarios):
     scenario_counter = {}
