@@ -154,7 +154,7 @@ def maybe(scenarios):
            
     return scenario_counter
 
-def scenarios(possibilities, team, full):
+def whatmusthappen(possibilities, team, full):
     print(f'Total scenarios: {len(possibilities)}')
     match_matrix = []
     for possibility in possibilities:
@@ -172,6 +172,7 @@ def scenarios(possibilities, team, full):
 
     must_happen = []
     if len(match_matrix):
+        print(f"There are only {len(match_matrix)} scenarios where {team} makes playoffs.")
         for i in range(len(match_matrix[0])):
             uniques = set()
             for i2 in range(len(match_matrix)):
@@ -209,6 +210,8 @@ def implications(possibilities):
         poss_matches = generate_whatifs(possibility)
         if whatifoutcomes.issubset(poss_matches):
             new_possibilities.append(possibility)
+
+    print(f'There are now only {len(new_possibilities)} scenarios')
 
     locked_scenarios = locked(possibilities)
     locked_after_whatif = locked(new_possibilities)
@@ -266,7 +269,7 @@ def generate_whatifs(possibility):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen','whatchanges'], help="""The command you want to run.
+    parser.add_argument('command', type=str, default='all', choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen','whatchanges','all'], help="""The command you want to run.
     "locked": shows teams that have secured a playoff spot.
     "eliminated": shows teams that cannot make playoffs, no matter what happens.
     "maybe": shows the number of scenarios in which it's possible for a team to make playoffs.
@@ -295,6 +298,29 @@ if __name__ == '__main__':
                     new_possibilities.append(possibility)
             possibilities = new_possibilities
 
+        if args.command == 'all':
+            locked_scenarios = locked(possibilities)
+            print(f"The following teams are locked in all {len(possibilities)} scenarios:")
+            for team, scenario_count in locked_scenarios.items():
+                if scenario_count == len(possibilities):
+                    print(f"{team} ")
+             
+            print("\nThe following can possibly make playoffs in X scenarios:")
+            maybe_scenarios = maybe(possibilities)
+            maybe_teams = []
+            for team, scenario_count in maybe_scenarios.items():
+                if len(possibilities) > scenario_count > 0:
+                    maybe_teams.append((team,scenario_count))
+            maybe_teams.sort(key=lambda a: a[1])
+            for team in maybe_teams:
+                print(f"{team[0]}: {team[1]}")
+
+            eliminate_scenarios = eliminated(possibilities)
+            print(f"\nThe following teams are eliminated in all {len(possibilities)} scenarios:")
+            for team, scenario_count in eliminate_scenarios.items():
+                if scenario_count == len(possibilities):
+                    print(f"{team} ")
+
         if args.command == 'locked':
             locked_scenarios = locked(possibilities)
             print(f"The following teams are locked in all {len(possibilities)} scenarios:")
@@ -310,16 +336,21 @@ if __name__ == '__main__':
                     print(f"{team} ")
         
         if args.command == 'maybe':
-            print(f'Total scenarios: {len(scenarios)}')
-            maybe_scenarios = maybe(possibilities)
             print("The following can possibly make playoffs in X scenarios:")
+            maybe_scenarios = maybe(possibilities)
+            maybe_teams = []
             for team, scenario_count in maybe_scenarios.items():
                 if len(possibilities) > scenario_count > 0:
-                    print(f"{team}: {scenario_count}")
+                    maybe_teams.append((team,scenario_count))
+            maybe_teams.sort(key=lambda a: a[1])
+            for team in maybe_teams:
+                print(f"{team[0]}: {team[1]}")
 
         if args.command =='whatneedstohappen':
             if args.team is not None and args.team in teams:
-                scenarios(possibilities, args.team, args.full)
+                whatmusthappen(possibilities, args.team, args.full)
+            else:
+                print("No team entered or team not found")
 
         if args.command == 'whatchanges':
             implications(possibilities)
