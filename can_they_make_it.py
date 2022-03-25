@@ -4,6 +4,7 @@ import sys
 import logging
 import config
 import dateutil.parser
+from whatif import whatifoutcomes
 
 def tiebreaker(possibility):
     for tie_position in possibility["standings"]["tied_for"]:
@@ -161,8 +162,12 @@ def scenarios(possibilities, team, full):
         if possibility["standings"][team] <= config.PLAYOFFS_CUTOFF_POSITION:
             result_set = []
             for match in possibility["matches"]:
-                match["opponents"].remove(match["winner"])
-                result_set.append((match['winner'], match['opponents'][0]))
+                for opponent in match["opponents"]:
+                    if opponent == match["winner"]:
+                        winner = opponent
+                    else:
+                        loser = opponent
+                result_set.append((winner, loser))
             match_matrix.append(result_set)
 
     must_happen = []
@@ -170,16 +175,16 @@ def scenarios(possibilities, team, full):
         uniques = set()
         for i2 in range(len(match_matrix)):
             uniques.add(match_matrix[i2][i])
-        if len(uniques) == 1:
+        if len(uniques) == 1 and uniques != whatifoutcomes:
             must_happen.append(list(uniques)[0])
 
-    if len(must_happen):
+    if len(must_happen) and len(must_happen) < len(possibilities):
         print(f"\nIn order for {team} to make playoffs:")
         must_happen.sort(key=lambda a: a[0])
         for game in must_happen:
             print(f"{game[0]} must beat {game[1]}")
 
-        if full != "no":
+        if full:
             print("")
             for match in match_matrix:
                 for game in match:
@@ -189,13 +194,33 @@ def scenarios(possibilities, team, full):
     else:
         print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
 
+def implications(possibilities):
+    print(f'Total scenarios: {len(possibilities)}')
 
+def generate_whatifs(possibility):
+    returnset = set()
+    for match in possibility["matches"]:
+        matchresult = [match["winner"]]
+        for team in match["opponents"]:
+            if team == match["winner"]:
+                winner = team
+            else:
+                loser = team
+        matchtuple = (winner, loser)
+        returnset.add(matchtuple)
+    return returnset
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen'], help='The command you want to run.')
-    parser.add_argument('--team', type=str, default=None)
-    parser.add_argument('--full', type=str, default="no")
+    parser.add_argument('command', type=str, choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen'], help="""The command you want to run.
+    "locked": shows teams that have secured a playoff spot.
+    "eliminated": shows teams that cannot make playoffs, no matter what happens.
+    "maybe": shows the number of scenarios in which it's possible for a team to make playoffs.
+    "whatneedstohappen": specify with a team to check for conditions they need in order to qualify.
+    """)
+    parser.add_argument('--team', type=str, default=None, help="specify a team tricode when using 'whatneedstohappen' for them to make it")
+    parser.add_argument('--full', action='store_true', help="add to show full what needs to happen scenarios")
+    parser.add_argument('--whatif', action='store_true', help="add to use the hypothetical scenarios in whatif.py")
 
     args = parser.parse_args()
     if len(sys.argv) == 1:
@@ -206,6 +231,14 @@ if __name__ == '__main__':
         possibilities = json.load(json_file)
         teams = possibilities.pop(0)
         previous_matches = possibilities.pop(0)
+
+        if args.whatif:
+            new_possibilities = []
+            for possibility in possibilities:
+                poss_matches = generate_whatifs(possibility)
+                if whatifoutcomes.issubset(poss_matches):
+                    new_possibilities.append(possibility)
+            possibilities = new_possibilities
 
         if args.command == 'locked':
             locked_scenarios = locked(possibilities)
@@ -232,4 +265,7 @@ if __name__ == '__main__':
         if args.command =='whatneedstohappen':
             if args.team is not None and args.team in teams:
                 scenarios(possibilities, args.team, args.full)
+
+        if args.command == 'implications':
+            implications(possibilities)
 # def check_possibilities(team, condition):
