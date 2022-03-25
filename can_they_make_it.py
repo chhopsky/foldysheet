@@ -323,7 +323,7 @@ def show_tiebreakers(possibilities):
         print("Tiebreakers are required.")
     
     if tiebreakers_required_count:
-        print(f"\nTiebreakers occur in {tiebreakers_required_count} of {len(possibilities)}scenarios.")
+        print(f"\nTiebreakers occur in {tiebreakers_required_count} of {len(possibilities)} scenarios.")
         tiebreaker_list = []
         for tiebreaker_teams, count in possible_tiebreakers.items():
             tiebreaker_list.append((tiebreaker_teams, count))
