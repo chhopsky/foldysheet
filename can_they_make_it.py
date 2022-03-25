@@ -197,6 +197,57 @@ def scenarios(possibilities, team, full):
 def implications(possibilities):
     print(f'Total scenarios: {len(possibilities)}')
 
+    print("If ", end="")
+    for match in whatifoutcomes:
+        print(f"{match[0]} beats {match[1]}, ")
+
+    new_possibilities = []
+    for possibility in possibilities:
+        poss_matches = generate_whatifs(possibility)
+        if whatifoutcomes.issubset(poss_matches):
+            new_possibilities.append(possibility)
+
+    locked_scenarios = locked(possibilities)
+    locked_after_whatif = locked(new_possibilities)
+    locked_now = set()
+    locked_after = set()
+    for team, scenario_count in locked_scenarios.items():
+        if scenario_count == len(possibilities):
+            locked_now.add(team)
+
+    for team, scenario_count in locked_after_whatif.items():
+        if scenario_count == len(new_possibilities):
+            locked_after.add(team)
+
+    if locked_now != locked_after:
+        if len(locked_now.difference(locked_after)):
+            print(f"No longer locked: {locked_now.difference(locked_after)}")
+            for team in locked_after.difference(locked_now):
+                print(team)
+        if len(locked_after.difference(locked_now)):
+            for team in locked_after.difference(locked_now):
+                print(f"{team} makes playoffs.")
+
+    eliminated_scenarios = eliminated(possibilities)
+    eliminated_after_whatif = eliminated(new_possibilities)
+    eliminated_now = set()
+    eliminated_after = set()
+    for team, scenario_count in eliminated_scenarios.items():
+        if scenario_count == len(possibilities):
+            eliminated_now.add(team)
+
+    for team, scenario_count in eliminated_after_whatif.items():
+        if scenario_count == len(new_possibilities):
+            eliminated_after.add(team)
+
+    if eliminated_now != eliminated_after:
+        if len(eliminated_now.difference(eliminated_after)):
+            for team in eliminated_after.difference(eliminated_now):
+                print(f"{team} is no longer eliminated.")
+        if len(eliminated_after.difference(eliminated_now)):
+            for team in eliminated_after.difference(eliminated_now):
+                print(f"{team} is eliminated.")
+
 def generate_whatifs(possibility):
     returnset = set()
     for match in possibility["matches"]:
@@ -212,11 +263,12 @@ def generate_whatifs(possibility):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen'], help="""The command you want to run.
+    parser.add_argument('command', type=str, choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen','whatchanges'], help="""The command you want to run.
     "locked": shows teams that have secured a playoff spot.
     "eliminated": shows teams that cannot make playoffs, no matter what happens.
     "maybe": shows the number of scenarios in which it's possible for a team to make playoffs.
     "whatneedstohappen": specify with a team to check for conditions they need in order to qualify.
+    "whatchanges": use the whatif file to see what changes in lock/elimination
     """)
     parser.add_argument('--team', type=str, default=None, help="specify a team tricode when using 'whatneedstohappen' for them to make it")
     parser.add_argument('--full', action='store_true', help="add to show full what needs to happen scenarios")
@@ -266,6 +318,6 @@ if __name__ == '__main__':
             if args.team is not None and args.team in teams:
                 scenarios(possibilities, args.team, args.full)
 
-        if args.command == 'implications':
+        if args.command == 'whatchanges':
             implications(possibilities)
 # def check_possibilities(team, condition):
