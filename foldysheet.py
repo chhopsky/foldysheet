@@ -101,7 +101,7 @@ while i < total_possibilities:
     
     order.sort(reverse = True)
 
-    actual_standings = {"ties": "no", "tied_for": [], "tie": {}}
+    actual_standings = {"ties": "no", "tied_for": [], "tie": {}, "tie_broken": {}}
     rank = 1
 
     for win_count in order:
@@ -110,6 +110,7 @@ while i < total_possibilities:
         
         if len(standings["standings"][win_count]) > 1:
             actual_standings["ties"] = "yes"
+            actual_standings["tie_broken"][rank] = False
             actual_standings["tied_for"].append(rank)
             actual_standings["tie"][rank] = len(standings["standings"][win_count])
         rank += len(standings["standings"][win_count])
