@@ -173,17 +173,21 @@ def scenarios(possibilities, team, full):
         if len(uniques) == 1:
             must_happen.append(list(uniques)[0])
 
-    print(f"\nIn order for {team} to make playoffs:")
-    must_happen.sort(key=lambda a: a[0])
-    for game in must_happen:
-        print(f"{game[0]} must beat {game[1]}")
+    if len(must_happen):
+        print(f"\nIn order for {team} to make playoffs:")
+        must_happen.sort(key=lambda a: a[0])
+        for game in must_happen:
+            print(f"{game[0]} must beat {game[1]}")
 
-    if full != "no":
-        print("")
-        for match in match_matrix:
-            for game in match:
-                print(f"{game[0]} beat {game[1]}, ", end="")
+        if full != "no":
             print("")
+            for match in match_matrix:
+                for game in match:
+                    print(f"{game[0]} beat {game[1]}, ", end="")
+                print("")
+
+    else:
+        print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
 
 
 
