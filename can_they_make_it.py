@@ -8,6 +8,7 @@ from whatif import whatifoutcomes
 
 def tiebreaker(possibility):
     possibility["standings"]["needs_tiebreaker"] = set()
+    possibility["standings"]["tiebreaker_teams"] = set()
     for tie_position in possibility["standings"]["tied_for"]:
         
         tie_count = possibility["standings"]["tie"][str(tie_position)]
@@ -56,6 +57,7 @@ def tiebreaker(possibility):
                             possibility["standings"][team] += 1
                             possibility["standings"]["tie_broken"][tie_position] = True
                     possibility["standings"]["needs_tiebreaker"].add(tie_position)
+                    possibility["standings"]["tiebreaker_teams"].add(team)
                 pass
                             
             elif tie_count == 3:
@@ -95,8 +97,12 @@ def tiebreaker(possibility):
                             possibility["standings"]["tie"][str(tie_position)] = 2
                 else:
                     possibility["standings"]["needs_tiebreaker"].add(tie_position)
+                    for team in tied_teams.keys():
+                        possibility["standings"]["tiebreaker_teams"].add(team)
             elif tie_count >= 4:
                 possibility["standings"]["needs_tiebreaker"].add(tie_position)
+                for team in tied_teams.keys():
+                    possibility["standings"]["tiebreaker_teams"].add(team)
                 pass
         pass
 
@@ -186,12 +192,12 @@ def whatmusthappen(possibilities, team, full):
                 if possibility["standings"][team] in possibility["standings"]["needs_tiebreaker"]:
                     tiebreakers.append(True)
                     tiebreaker_count += 1
-                    for opponent, score in possibility["standings"].items():
-                        if score == possibility["standings"][team] and opponent != team:
-                            if maybe_tiebreaker_against.get(opponent):
-                                maybe_tiebreaker_against[opponent] += 1
-                            else:
-                                maybe_tiebreaker_against[opponent] = 1
+                    tie = tuple(possibility["standings"]["tiebreaker_teams"])
+                    if maybe_tiebreaker_against.get(tie):
+                        maybe_tiebreaker_against[tie] += 1
+                    else:
+                        maybe_tiebreaker_against[tie] = 1
+                    
                 else:
                     tiebreakers.append(False)
 
@@ -221,18 +227,19 @@ def whatmusthappen(possibilities, team, full):
 
         if len(match_matrix) == tiebreaker_count:
             print("\nThey must win a tiebreaker.")
-            print("\nMay be against ", end="")
+            print("\nMay be against:")
             for tiebreak_opponent, scenarios in maybe_tiebreaker_against.items():
-                print(f"{tiebreak_opponent} ({scenarios}), ", end="")
-            print("")
-            print("This can be more than the total scenarios due to multi-way ties in a single scenario.")
+                for opponent in tiebreak_opponent:
+                    print(f"{opponent}, ", end="")
+                print(f"({scenarios} scenarios)")
         elif tiebreaker_count > 0:
             print(f"\nThey must win a tiebreaker in {tiebreaker_count} of {len(match_matrix)} scenarios")
-            print("\nMay be against ", end="")
+            print("\nMay be against:")
             for tiebreak_opponent, scenarios in maybe_tiebreaker_against.items():
-                print(f"{tiebreak_opponent} ({scenarios}), ", end="")
+                for opponent in tiebreak_opponent:
+                    print(f"{opponent}, ", end="")
+                print(f"({scenarios} scenarios)")
             print("")
-            print("This can be more than the total scenarios due to multi-way ties in a single scenario.")
 
         else:
             print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
