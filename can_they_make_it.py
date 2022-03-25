@@ -302,6 +302,36 @@ def implications(possibilities):
             for team in eliminated_after.difference(eliminated_now):
                 print(f"{team} is eliminated.")
 
+def show_tiebreakers(possibilities):
+    tiebreakers_required_count = 0
+    possible_tiebreakers = {}
+    for possibility in possibilities:
+        tiebreaker(possibility)
+        if len(possibility["standings"]["needs_tiebreaker"]):
+            tiebreakers_required_count += 1
+            tie = tuple(possibility["standings"]["tiebreaker_teams"])
+            if possible_tiebreakers.get(tie):
+                possible_tiebreakers[tie] += 1
+            else:
+                possible_tiebreakers[tie] = 1
+    if tiebreakers_required_count != len(possibilities):
+        print("Tiebreakers may not be required.")
+    else:
+        print("Tiebreakers are required.")
+    
+    if tiebreakers_required_count:
+        print(f"\nTiebreakers occur in {tiebreakers_required_count} of {len(possibilities)}scenarios.")
+        tiebreaker_list = []
+        for tiebreaker_teams, count in possible_tiebreakers.items():
+            tiebreaker_list.append((tiebreaker_teams, count))
+        
+        tiebreaker_list.sort(key=lambda a: a[1], reverse=True)
+
+        for tiebreaker_scenario in tiebreaker_list:
+            for team in tiebreaker_scenario[0]:
+                print(f"{team}, ", end="")
+            print(f"({tiebreaker_scenario[1]})")
+
 def generate_whatifs(possibility):
     returnset = set()
     for match in possibility["matches"]:
@@ -317,12 +347,13 @@ def generate_whatifs(possibility):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, default='all', choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen','whatchanges','all'], help="""The command you want to run.
+    parser.add_argument('command', type=str, default='all', choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen','whatchanges','all','tiebreakers'], help="""The command you want to run.
     "locked": shows teams that have secured a playoff spot.
     "eliminated": shows teams that cannot make playoffs, no matter what happens.
     "maybe": shows the number of scenarios in which it's possible for a team to make playoffs.
     "whatneedstohappen": specify with a team to check for conditions they need in order to qualify.
     "whatchanges": use the whatif file to see what changes in lock/elimination
+    "tiebreakers": show tiebreaker info
     """)
     parser.add_argument('--team', type=str, default=None, help="specify a team tricode when using 'whatneedstohappen' for them to make it")
     parser.add_argument('--full', action='store_true', help="add to show full what needs to happen scenarios")
@@ -407,6 +438,9 @@ if __name__ == '__main__':
                 whatmusthappen(possibilities, args.team, args.full)
             else:
                 print("No team entered or team not found")
+
+        if args.command == 'tiebreakers':
+            show_tiebreakers(possibilities)
 
         if args.command == 'whatchanges':
             implications(possibilities)
