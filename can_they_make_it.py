@@ -7,7 +7,9 @@ import dateutil.parser
 from whatif import whatifoutcomes
 
 def tiebreaker(possibility):
+    possibility["standings"]["needs_tiebreaker"] = set()
     for tie_position in possibility["standings"]["tied_for"]:
+        
         tie_count = possibility["standings"]["tie"][str(tie_position)]
         cutoff = config.PLAYOFFS_CUTOFF_POSITION
         if tie_position <= cutoff < tie_position + tie_count - 1:
@@ -53,6 +55,7 @@ def tiebreaker(possibility):
                         if tie_data["sov"][0][0] != team:
                             possibility["standings"][team] += 1
                             possibility["standings"]["tie_broken"][tie_position] = True
+                    possibility["standings"]["needs_tiebreaker"].add(tie_position)
                 pass
                             
             elif tie_count == 3:
@@ -90,8 +93,10 @@ def tiebreaker(possibility):
                         elif score["wins"] == 3:
                             possibility["standings"]["tied_for"].append(tie_position)
                             possibility["standings"]["tie"][str(tie_position)] = 2
+                else:
+                    possibility["standings"]["needs_tiebreaker"].add(tie_position)
             elif tie_count >= 4:
-                # we are fucked. it's playoffs baybee
+                possibility["standings"]["needs_tiebreaker"].add(tie_position)
                 pass
         pass
 
@@ -102,14 +107,14 @@ def eliminated(scenarios):
     
     for team, details in teams.items():
         teamlist.append(team)
-        scenario_counter[team] = 0
+        scenario_counter[team] = {"scenarios": 0, "tiebreakers_req": 0}
 
     for possibility in scenarios:
         if possibility["standings"]["ties"] == "yes":
             tiebreaker(possibility)
         for team in teamlist:
             if possibility["standings"][team] > config.PLAYOFFS_CUTOFF_POSITION:
-                scenario_counter[team] += 1
+                scenario_counter[team]["scenarios"] += 1
 
     return scenario_counter
 
@@ -119,7 +124,7 @@ def locked(scenarios):
     
     for team, details in teams.items():
         teamlist.append(team)
-        scenario_counter[team] = 0
+        scenario_counter[team] = {"scenarios": 0, "tiebreakers_req": 0}
 
     for possibility in scenarios:
         cutoff = config.PLAYOFFS_CUTOFF_POSITION + 1
@@ -134,7 +139,7 @@ def locked(scenarios):
 
         for team in teamlist:     
             if possibility["standings"][team] < cutoff:
-                scenario_counter[team] += 1
+                scenario_counter[team]["scenarios"] += 1
             
     return scenario_counter
 
@@ -144,19 +149,27 @@ def maybe(scenarios):
 
     for team, details in teams.items():
         teamlist.append(team)
-        scenario_counter[team] = 0
+        scenario_counter[team] = {"scenarios": 0, "tiebreakers_req": 0}
 
     for possibility in scenarios:
         tiebreaker(possibility)
         for team in teamlist:
             if possibility["standings"][team] <= config.PLAYOFFS_CUTOFF_POSITION:
-                scenario_counter[team] += 1
-           
+                scenario_counter[team]["scenarios"] += 1
+                if len(possibility["standings"]["needs_tiebreaker"]):
+                    if possibility["standings"][team] in possibility["standings"]["needs_tiebreaker"]:
+                        scenario_counter[team]["tiebreakers_req"] += 1
+
     return scenario_counter
 
 def whatmusthappen(possibilities, team, full):
     print(f'Total scenarios: {len(possibilities)}')
     match_matrix = []
+    tiebreakers = []
+    must_happen = []
+    tiebreaker_count = 0
+    maybe_tiebreaker_against = {}
+
     for possibility in possibilities:
         tiebreaker(possibility)
         if possibility["standings"][team] <= config.PLAYOFFS_CUTOFF_POSITION:
@@ -169,8 +182,19 @@ def whatmusthappen(possibilities, team, full):
                         loser = opponent
                 result_set.append((winner, loser))
             match_matrix.append(result_set)
+            if len(possibility["standings"]["needs_tiebreaker"]):
+                if possibility["standings"][team] in possibility["standings"]["needs_tiebreaker"]:
+                    tiebreakers.append(True)
+                    tiebreaker_count += 1
+                    for opponent, score in possibility["standings"].items():
+                        if score == possibility["standings"][team] and opponent != team:
+                            if maybe_tiebreaker_against.get(opponent):
+                                maybe_tiebreaker_against[opponent] += 1
+                            else:
+                                maybe_tiebreaker_against[opponent] = 1
+                else:
+                    tiebreakers.append(False)
 
-    must_happen = []
     if len(match_matrix):
         print(f"There are only {len(match_matrix)} scenarios where {team} makes playoffs.")
         for i in range(len(match_matrix[0])):
@@ -188,10 +212,27 @@ def whatmusthappen(possibilities, team, full):
 
             if full:
                 print("")
-                for match in match_matrix:
+                for i, match in enumerate(match_matrix):
                     for game in match:
                         print(f"{game[0]} beat {game[1]}, ", end="")
+                    if tiebreakers[i]:
+                        print(f"[TB REQ]", end="")
                     print("")
+
+        if len(match_matrix) == tiebreaker_count:
+            print("\nThey must win a tiebreaker.")
+            print("\nMay be against ", end="")
+            for tiebreak_opponent, scenarios in maybe_tiebreaker_against.items():
+                print(f"{tiebreak_opponent} ({scenarios}), ", end="")
+            print("")
+            print("This can be more than the total scenarios due to multi-way ties in a single scenario.")
+        elif tiebreaker_count > 0:
+            print(f"\nThey must win a tiebreaker in {tiebreaker_count} of {len(match_matrix)} scenarios")
+            print("\nMay be against ", end="")
+            for tiebreak_opponent, scenarios in maybe_tiebreaker_against.items():
+                print(f"{tiebreak_opponent} ({scenarios}), ", end="")
+            print("")
+            print("This can be more than the total scenarios due to multi-way ties in a single scenario.")
 
         else:
             print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
@@ -302,49 +343,57 @@ if __name__ == '__main__':
             locked_scenarios = locked(possibilities)
             print(f"The following teams are locked in all {len(possibilities)} scenarios:")
             for team, scenario_count in locked_scenarios.items():
-                if scenario_count == len(possibilities):
+                if scenario_count["scenarios"] == len(possibilities):
                     print(f"{team} ")
              
             print("\nThe following can possibly make playoffs in X scenarios:")
             maybe_scenarios = maybe(possibilities)
             maybe_teams = []
             for team, scenario_count in maybe_scenarios.items():
-                if len(possibilities) > scenario_count > 0:
-                    maybe_teams.append((team,scenario_count))
+                if len(possibilities) > scenario_count["scenarios"] > 0:
+                    tiebreaker_req = scenario_count.get("tiebreakers_req")
+                    maybe_teams.append((team,scenario_count["scenarios"],tiebreaker_req))
             maybe_teams.sort(key=lambda a: a[1])
             for team in maybe_teams:
-                print(f"{team[0]}: {team[1]}")
-
+                print(f"{team[0]}: {team[1]}", end="")
+                if team[2]:
+                    print(f" (tiebreakers required in {team[2]})", end="")
+                print("")
+                
             eliminate_scenarios = eliminated(possibilities)
             print(f"\nThe following teams are eliminated in all {len(possibilities)} scenarios:")
             for team, scenario_count in eliminate_scenarios.items():
-                if scenario_count == len(possibilities):
+                if scenario_count["scenarios"] == len(possibilities):
                     print(f"{team} ")
 
         if args.command == 'locked':
             locked_scenarios = locked(possibilities)
             print(f"The following teams are locked in all {len(possibilities)} scenarios:")
             for team, scenario_count in locked_scenarios.items():
-                if scenario_count == len(possibilities):
+                if scenario_count["scenarios"] == len(possibilities):
                     print(f"{team} ")
 
         if args.command == 'eliminated':
             eliminate_scenarios = eliminated(possibilities)
             print(f"The following teams are eliminated in all {len(possibilities)} scenarios:")
             for team, scenario_count in eliminate_scenarios.items():
-                if scenario_count == len(possibilities):
+                if scenario_count["scenarios"] == len(possibilities):
                     print(f"{team} ")
         
         if args.command == 'maybe':
-            print("The following can possibly make playoffs in X scenarios:")
+            print("\nThe following can possibly make playoffs in X scenarios:")
             maybe_scenarios = maybe(possibilities)
             maybe_teams = []
             for team, scenario_count in maybe_scenarios.items():
-                if len(possibilities) > scenario_count > 0:
-                    maybe_teams.append((team,scenario_count))
+                if len(possibilities) > scenario_count["scenarios"] > 0:
+                    tiebreaker_req = scenario_count.get("tiebreakers_req")
+                    maybe_teams.append((team,scenario_count["scenarios"],tiebreaker_req))
             maybe_teams.sort(key=lambda a: a[1])
             for team in maybe_teams:
-                print(f"{team[0]}: {team[1]}")
+                print(f"{team[0]}: {team[1]}", end="")
+                if team[2]:
+                    print(f" (tiebreakers required in {team[2]})", end="")
+                print("")
 
         if args.command =='whatneedstohappen':
             if args.team is not None and args.team in teams:
