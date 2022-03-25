@@ -228,19 +228,20 @@ def whatmusthappen(possibilities, team, full):
 
         if len(match_matrix) == tiebreaker_count:
             print("\nThey must win a tiebreaker.")
-            print("\nMay be against:")
-            for tiebreak_opponent, scenarios in maybe_tiebreaker_against.items():
-                for opponent in tiebreak_opponent:
-                    print(f"{opponent}, ", end="")
-                print(f"({scenarios} scenarios)")
         elif tiebreaker_count > 0:
-            print(f"\nThey must win a tiebreaker in {tiebreaker_count} of {len(match_matrix)} scenarios")
-            print("\nMay be against:")
-            for tiebreak_opponent, scenarios in maybe_tiebreaker_against.items():
-                for opponent in tiebreak_opponent:
-                    print(f"{opponent}, ", end="")
-                print(f"({scenarios} scenarios)")
-            print("")
+            print(f"\nThey must win a tiebreaker in {tiebreaker_count} of {len(match_matrix)} scenarios:")
+        if len(match_matrix) == tiebreaker_count or tiebreaker_count > 0:
+            print("\nAgainst:")
+            tiebreaker_list = []
+            for tiebreaker_teams, count in maybe_tiebreaker_against.items():
+                tiebreaker_list.append((tiebreaker_teams, count))
+            
+            tiebreaker_list.sort(key=lambda a: a[1], reverse=True)
+
+            for tiebreaker_scenario in tiebreaker_list:
+                for team in tiebreaker_scenario[0]:
+                    print(f"{team}, ", end="")
+                print(f"({tiebreaker_scenario[1]})")
 
         else:
             print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
