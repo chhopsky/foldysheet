@@ -153,7 +153,7 @@ def maybe(scenarios):
            
     return scenario_counter
 
-def scenarios(possibilities, team):
+def scenarios(possibilities, team, full):
     print(f'Total scenarios: {len(possibilities)}')
     match_matrix = []
     for possibility in possibilities:
@@ -173,16 +173,25 @@ def scenarios(possibilities, team):
         if len(uniques) == 1:
             must_happen.append(list(uniques)[0])
 
-    print(f"In order for {team} to make playoffs:")
+    print(f"\nIn order for {team} to make playoffs:")
     must_happen.sort(key=lambda a: a[0])
     for game in must_happen:
         print(f"{game[0]} must beat {game[1]}")
+
+    if full != "no":
+        print("")
+        for match in match_matrix:
+            for game in match:
+                print(f"{game[0]} beat {game[1]}, ", end="")
+            print("")
+
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('command', type=str, choices=['locked', 'eliminated', 'maybe', 'whatneedstohappen'], help='The command you want to run.')
     parser.add_argument('--team', type=str, default=None)
+    parser.add_argument('--full', type=str, default="no")
 
     args = parser.parse_args()
     if len(sys.argv) == 1:
@@ -218,5 +227,5 @@ if __name__ == '__main__':
 
         if args.command =='whatneedstohappen':
             if args.team is not None and args.team in teams:
-                scenarios(possibilities, args.team)
+                scenarios(possibilities, args.team, args.full)
 # def check_possibilities(team, condition):
