@@ -192,7 +192,8 @@ def whatmusthappen(possibilities, team, full):
                 if possibility["standings"][team] in possibility["standings"]["needs_tiebreaker"]:
                     tiebreakers.append(True)
                     tiebreaker_count += 1
-                    tie = tuple(possibility["standings"]["tiebreaker_teams"])
+                    tie_list = list(possibility["standings"]["tiebreaker_teams"])
+                    tie = tuple(sorted(tie_list))
                     if maybe_tiebreaker_against.get(tie):
                         maybe_tiebreaker_against[tie] += 1
                     else:
@@ -309,7 +310,8 @@ def show_tiebreakers(possibilities):
         tiebreaker(possibility)
         if len(possibility["standings"]["needs_tiebreaker"]):
             tiebreakers_required_count += 1
-            tie = tuple(possibility["standings"]["tiebreaker_teams"])
+            tie_list = list(possibility["standings"]["tiebreaker_teams"])
+            tie = tuple(sorted(tie_list))
             if possible_tiebreakers.get(tie):
                 possible_tiebreakers[tie] += 1
             else:
@@ -444,4 +446,3 @@ if __name__ == '__main__':
 
         if args.command == 'whatchanges':
             implications(possibilities)
-# def check_possibilities(team, condition):
