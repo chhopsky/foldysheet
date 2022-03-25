@@ -171,28 +171,31 @@ def scenarios(possibilities, team, full):
             match_matrix.append(result_set)
 
     must_happen = []
-    for i in range(len(match_matrix[0])):
-        uniques = set()
-        for i2 in range(len(match_matrix)):
-            uniques.add(match_matrix[i2][i])
-        if len(uniques) == 1 and uniques != whatifoutcomes:
-            must_happen.append(list(uniques)[0])
+    if len(match_matrix):
+        for i in range(len(match_matrix[0])):
+            uniques = set()
+            for i2 in range(len(match_matrix)):
+                uniques.add(match_matrix[i2][i])
+            if len(uniques) == 1 and uniques != whatifoutcomes:
+                must_happen.append(list(uniques)[0])
 
-    if len(must_happen) and len(must_happen) < len(possibilities):
-        print(f"\nIn order for {team} to make playoffs:")
-        must_happen.sort(key=lambda a: a[0])
-        for game in must_happen:
-            print(f"{game[0]} must beat {game[1]}")
+        if len(must_happen) and len(must_happen) < len(possibilities):
+            print(f"\nIn order for {team} to make playoffs:")
+            must_happen.sort(key=lambda a: a[0])
+            for game in must_happen:
+                print(f"{game[0]} must beat {game[1]}")
 
-        if full:
-            print("")
-            for match in match_matrix:
-                for game in match:
-                    print(f"{game[0]} beat {game[1]}, ", end="")
+            if full:
                 print("")
+                for match in match_matrix:
+                    for game in match:
+                        print(f"{game[0]} beat {game[1]}, ", end="")
+                    print("")
 
+        else:
+            print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
     else:
-        print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
+        print(f"{team} cannot make playoffs.")
 
 def implications(possibilities):
     print(f'Total scenarios: {len(possibilities)}')
