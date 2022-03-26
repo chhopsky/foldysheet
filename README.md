@@ -17,7 +17,7 @@ Locked and eliminated are self explanatory. Maybe will tell you the number of sc
 
 NA tiebreaker rules are included - comment out the lines that call `tiebreaker(possibility)` to not apply them.
 
-Playoff lock is manually set to 6th place, because I wrote this primarily for LCS. Technically it can work on any esport that deals with BO1s and is on pandascore, it also works for BO3s, but playoff elimination rules may be different based on win-scores (2-0 vs 2-1) so YMMV.
+Configure the playoff lock position in `config.py`, by default it is set to 6th place, because I wrote this primarily for LCS. Technically it can work on any esport that deals with BO1s and is on pandascore, it also works for BO3s, but playoff elimination rules may be different based on win-scores (2-0 vs 2-1) so YMMV.
 
 Any questions, hit me up @chhopsky on twitter.
 
