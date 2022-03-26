@@ -199,8 +199,8 @@ def whatmusthappen(possibilities, team, full):
                     else:
                         maybe_tiebreaker_against[tie] = 1
                     
-                else:
-                    tiebreakers.append(False)
+            else:
+                tiebreakers.append(False)
 
     if len(match_matrix):
         print(f"There are only {len(match_matrix)} scenarios where {team} makes playoffs.")
@@ -217,14 +217,14 @@ def whatmusthappen(possibilities, team, full):
             for game in must_happen:
                 print(f"{game[0]} must beat {game[1]}")
 
-            if full:
+        if full:
+            print("")
+            for i, match in enumerate(match_matrix):
+                for game in match:
+                    print(f"{game[0]} beat {game[1]}, ", end="")
+                if tiebreakers[i]:
+                    print(f"[TB REQ]", end="")
                 print("")
-                for i, match in enumerate(match_matrix):
-                    for game in match:
-                        print(f"{game[0]} beat {game[1]}, ", end="")
-                    if tiebreakers[i]:
-                        print(f"[TB REQ]", end="")
-                    print("")
 
         if len(match_matrix) == tiebreaker_count:
             print("\nThey must win a tiebreaker.")
@@ -338,7 +338,6 @@ def show_tiebreakers(possibilities):
 def generate_whatifs(possibility):
     returnset = set()
     for match in possibility["matches"]:
-        matchresult = [match["winner"]]
         for team in match["opponents"]:
             if team == match["winner"]:
                 winner = team
