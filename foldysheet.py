@@ -21,6 +21,9 @@ match_url = f"https://api.pandascore.co/series/{slug}/matches?per_page=100&sort=
 
 response = requests.get(match_url, headers = headers)
 matches = response.json()
+f = open("lastrequest.json", "w")
+f.write(json.dumps(matches))
+f.close()
 teams = {}
 unplayed_matches = []
 
@@ -41,7 +44,7 @@ for match in matches:
     
     if winner is not None:
         teams[winner]["wins"] += 1
-    else:
+    elif "ROUND" not in match["name"].upper() and "GRAND" not in match["name"].upper():
         unplayed_matches.append(match)
 
 print(f"found {len(matches)} matches and {len(teams)} teams")
