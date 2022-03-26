@@ -15,7 +15,7 @@ HOW TO USE:
 
 Locked and eliminated are self explanatory. Maybe will tell you the number of scenarios in which a team *can* make it. Since every region has its own tiebreaker rules, this does *not* tell you how ties are solved. A scenario in which a team is tied will count both as a possibility and tell you who's tied. You can then apply your region's head to head rules to fix it.
 
-NA tiebreaker rules are included but optional to implement - run your possibility through `tiebreaker(possibility)` to apply them.
+NA tiebreaker rules are included - comment out the lines that call `tiebreaker(possibility)` to not apply them.
 
 Playoff lock is manually set to 6th place, because I wrote this primarily for LCS. Technically it can work on any esport that deals with BO1s and is on pandascore, it also works for BO3s, but playoff elimination rules may be different based on win-scores (2-0 vs 2-1) so YMMV.
 
