@@ -44,7 +44,7 @@ for match in matches:
     
     if winner is not None:
         teams[winner]["wins"] += 1
-    elif "ROUND" not in match["name"].upper() and "GRAND" not in match["name"].upper():
+    elif "ROUND" not in match["name"].upper() and "GRAND" not in match["name"].upper() and "TBD" not in match["name"].upper():
         unplayed_matches.append(match)
 
 print(f"found {len(matches)} matches and {len(teams)} teams")
