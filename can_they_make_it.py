@@ -51,11 +51,6 @@ def tiebreaker(possibility):
                     if score["wins"] == 0:
                         possibility["standings"][team] += 1
                         possibility["standings"]["tie_broken"][tie_position] = True
-                    if score["wins"] == 1 and tie_data["complete"] == True:
-                        tie_data["sov"].sort(key=lambda a: a[1])
-                        if tie_data["sov"][0][0] != team:
-                            possibility["standings"][team] += 1
-                            possibility["standings"]["tie_broken"][tie_position] = True
                     possibility["standings"]["needs_tiebreaker"].add(tie_position)
                     possibility["standings"]["tiebreaker_teams"].add(team)
                 pass
@@ -198,7 +193,8 @@ def whatmusthappen(possibilities, team, full):
                         maybe_tiebreaker_against[tie] += 1
                     else:
                         maybe_tiebreaker_against[tie] = 1
-                    
+                else:
+                    tiebreakers.append(False)
             else:
                 tiebreakers.append(False)
 
