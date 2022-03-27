@@ -63,7 +63,6 @@ def tiebreaker(possibility):
                 # 3-1, 3-1, 0-4 (eliminate 3, new tb 1&2)
                 # 4-0, 1-3, 1-3 (promote 1, new tb 2&3)
                 # 4-0, 2-2, 0-4 (order by score)
-                print(tied_teams)
                 scores = []
                 for team, score in tied_teams.items():
                     scores.append(score["wins"])
@@ -95,7 +94,6 @@ def tiebreaker(possibility):
                     possibility["standings"]["needs_tiebreaker"].add(tie_position)
                     for team in tied_teams.keys():
                         possibility["standings"]["tiebreaker_teams"].add(team)
-                print(possibility)
             elif tie_count >= 4:
                 possibility["standings"]["needs_tiebreaker"].add(tie_position)
                 for team in tied_teams.keys():
