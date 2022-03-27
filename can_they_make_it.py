@@ -16,7 +16,7 @@ def tiebreaker(possibility):
         if tie_position <= cutoff < tie_position + tie_count - 1:
             possibility["standings"]["tie_broken"] = {tie_position: False}
             tied_teams = {}
-            tie_data = { "complete": True, "sov": []}
+            tie_data = { "complete": True, "tgvt": []}
             for key, value in possibility["standings"].items():
                 if value == tie_position:
                     tied_teams[key] = { "wins": 0 }
@@ -32,7 +32,7 @@ def tiebreaker(possibility):
                         match_start = dateutil.parser.isoparse(match["begin_at"])
                         match_end = dateutil.parser.isoparse(match["end_at"])
                         match_time = match_end - match_start
-                        tie_data["sov"].append((winner, match_time.seconds))
+                        tie_data["tgvt"].append((winner, match_time.seconds))
             
             for unfinished_match in possibility["matches"]:
                 team1 = unfinished_match["opponents"][0]
