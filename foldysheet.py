@@ -15,7 +15,9 @@ headers = {"Authorization": f"Bearer {token}"}
 
 response = requests.get(series_url, headers = headers)
 
-slug = response.json()[0]["slug"]
+for result in response.json():
+    if result["league"]["name"] == config.SERIES.upper():
+        slug = result["slug"]
 
 match_url = f"https://api.pandascore.co/series/{slug}/matches?per_page=100&sort=scheduled_at"
 
@@ -44,7 +46,7 @@ for match in matches:
     
     if winner is not None:
         teams[winner]["wins"] += 1
-    elif match["tournament"]["name"] == "Regular":
+    elif match["tournament"]["name"] == "Regular Season":
         unplayed_matches.append(match)
 
 print(f"found {len(matches)} matches and {len(teams)} teams")
