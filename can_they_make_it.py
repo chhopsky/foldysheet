@@ -386,7 +386,7 @@ if __name__ == '__main__':
             maybe_scenarios = maybe(possibilities)
             maybe_teams = []
             for team, scenario_count in maybe_scenarios.items():
-                if len(possibilities) > scenario_count["scenarios"] > 0:
+                if len(possibilities) > scenario_count["scenarios"] > 0 or (scenario_count["scenarios"] == len(possibilities) and scenario_count["tiebreakers_req"] > 0):
                     tiebreaker_req = scenario_count.get("tiebreakers_req")
                     maybe_teams.append((team,scenario_count["scenarios"],tiebreaker_req))
             maybe_teams.sort(key=lambda a: a[1])
@@ -421,7 +421,7 @@ if __name__ == '__main__':
             maybe_scenarios = maybe(possibilities)
             maybe_teams = []
             for team, scenario_count in maybe_scenarios.items():
-                if len(possibilities) > scenario_count["scenarios"] > 0:
+                if len(possibilities) > scenario_count["scenarios"] > 0 or (scenario_count["scenarios"] == len(possibilities) and scenario_count["tiebreakers_req"] > 0):
                     tiebreaker_req = scenario_count.get("tiebreakers_req")
                     maybe_teams.append((team,scenario_count["scenarios"],tiebreaker_req))
             maybe_teams.sort(key=lambda a: a[1])
