@@ -208,7 +208,7 @@ def whatmusthappen(possibilities, team, full):
                 must_happen.append(list(uniques)[0])
 
         if len(must_happen) and len(must_happen) < len(possibilities):
-            print(f"\nIn order for {team} to make playoffs:")
+            print(f"\nIn order for {team} to make top {config.PLAYOFFS_CUTOFF_POSITION}:")
             must_happen.sort(key=lambda a: a[0])
             for game in must_happen:
                 print(f"{game[0]} must beat {game[1]}")
@@ -217,7 +217,7 @@ def whatmusthappen(possibilities, team, full):
             print("")
             for i, match in enumerate(match_matrix):
                 for game in match:
-                    print(f"{game[0]} beat {game[1]}, ", end="")
+                    print(f"{game[0]},", end="")
                 if tiebreakers[i]:
                     print(f"[TB REQ]", end="")
                 print("")
@@ -240,9 +240,9 @@ def whatmusthappen(possibilities, team, full):
                 print(f"({tiebreaker_scenario[1]})")
 
         else:
-            print(f"\nThere are no 'must happen' scenarios for {team} to make playoffs.")
+            print(f"\nThere are no 'must happen' scenarios for {team} to make top {config.PLAYOFFS_CUTOFF_POSITION}.")
     else:
-        print(f"{team} cannot make playoffs.")
+        print(f"{team} cannot make top {config.PLAYOFFS_CUTOFF_POSITION}.")
 
 def implications(possibilities):
     print(f'Total scenarios: {len(possibilities)}')
@@ -382,7 +382,7 @@ if __name__ == '__main__':
                 if scenario_count["scenarios"] == len(possibilities):
                     print(f"{team} ")
              
-            print("\nThe following can possibly make playoffs in X scenarios:")
+            print(f"\nThe following can possibly make top {config.PLAYOFFS_CUTOFF_POSITION} in {len(possibilities)} scenarios:")
             maybe_scenarios = maybe(possibilities)
             maybe_teams = []
             for team, scenario_count in maybe_scenarios.items():
@@ -391,9 +391,9 @@ if __name__ == '__main__':
                     maybe_teams.append((team,scenario_count["scenarios"],tiebreaker_req))
             maybe_teams.sort(key=lambda a: a[1])
             for team in maybe_teams:
-                print(f"{team[0]}: {team[1]}", end="")
+                print(f"{team[0]}: {team[1]}, {team[1]/len(possibilities):.0%}", end="")
                 if team[2]:
-                    print(f" (tiebreakers required in {team[2]})", end="")
+                    print(f" (tiebreakers required in {team[2]}, {team[2]/len(possibilities):.0%})", end="")
                 print("")
                 
             eliminate_scenarios = eliminated(possibilities)
@@ -417,7 +417,7 @@ if __name__ == '__main__':
                     print(f"{team} ")
         
         if args.command == 'maybe':
-            print("\nThe following can possibly make playoffs in X scenarios:")
+            print(f"\nThe following can possibly make top {config.PLAYOFFS_CUTOFF_POSITION} in {len(possibilities)} scenarios:")
             maybe_scenarios = maybe(possibilities)
             maybe_teams = []
             for team, scenario_count in maybe_scenarios.items():
