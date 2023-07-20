@@ -217,7 +217,7 @@ def whatmusthappen(possibilities, team, full):
             print("")
             for i, match in enumerate(match_matrix):
                 for game in match:
-                    print(f"{game[0]},", end="")
+                    print(f"{game[0]} beat {game[1]}, ", end="")
                 if tiebreakers[i]:
                     print(f"[TB REQ]", end="")
                 print("")
